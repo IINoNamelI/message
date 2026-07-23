@@ -1,8 +1,7 @@
 import { supabase } from './supabase.js'
 
-const emailInput = document.getElementById('email')
-const passwordInput = document.getElementById('password')
-const usernameInput = document.getElementById('username')
+const loginInput = document.getElementById('login-input')
+const passwordInput = document.getElementById('password-input')
 const registerBtn = document.getElementById('register-btn')
 const loginBtn = document.getElementById('login-btn')
 const logoutBtn = document.getElementById('logout-btn')
@@ -10,7 +9,10 @@ const authContainer = document.getElementById('auth-container')
 const chatContainer = document.getElementById('chat-container')
 const userNameSpan = document.getElementById('user-name')
 
-// 1. Проверяем, авторизован ли пользователь при загрузке страницы
+// Функция генерации технического email из логина
+const getInternalEmail = (login) => `${login.trim().toLowerCase()}@messenger.local`
+
+// 1. Проверка сессии при перезагрузке страницы
 async function checkUser() {
     const { data: { session } } = await supabase.auth.getSession()
     if (session) {
@@ -19,46 +21,54 @@ async function checkUser() {
 }
 checkUser()
 
-// 2. Регистрация
+// 2. Регистрация по логину и паролю
 registerBtn.addEventListener('click', async () => {
-    const email = emailInput.value
+    const login = loginInput.value.trim()
     const password = passwordInput.value
-    const username = usernameInput.value
 
-    if (!email || !password || !username) {
-        alert('Заполните все поля!')
+    if (!login || !password) {
+        alert('Заполните логин и пароль!')
         return
     }
 
+    const email = getInternalEmail(login)
+
     const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
+        email: email,
+        password: password,
         options: {
-            data: { username: username } // Передаем юзернейм в триггер БД
+            data: { username: login } // Передаем логин для триггера БД (создания профиля)
         }
     })
 
     if (error) {
         alert('Ошибка регистрации: ' + error.message)
     } else {
-        alert('Регистрация успешна! Проверьте почту или войдите в аккаунт.')
+        alert('Регистрация успешна! Теперь вы можете войти.')
     }
 })
 
-// 3. Вход
+// 3. Вход по логину и паролю
 loginBtn.addEventListener('click', async () => {
-    const email = emailInput.value
+    const login = loginInput.value.trim()
     const password = passwordInput.value
 
+    if (!login || !password) {
+        alert('Заполните логин и пароль!')
+        return
+    }
+
+    const email = getInternalEmail(login)
+
     const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
+        email: email,
+        password: password
     })
 
     if (error) {
-        alert('Ошибка входа: ' + error.message)
+        alert('Ошибка входа: Неверный логин или пароль')
     } else {
-        showChat(data.user)
+        showChat(data.user, login)
     }
 })
 
@@ -67,11 +77,13 @@ logoutBtn.addEventListener('click', async () => {
     await supabase.auth.signOut()
     chatContainer.style.display = 'none'
     authContainer.style.display = 'block'
+    loginInput.value = ''
+    passwordInput.value = ''
 })
 
-// Переключение интерфейса после входа
-function showChat(user) {
+// Интерфейс после входа
+function showChat(user, currentLogin = 'Пользователь') {
     authContainer.style.display = 'none'
     chatContainer.style.display = 'block'
-    userNameSpan.textContent = user.email // Здесь позже заменим на юзернейм из таблицы profiles
+    userNameSpan.textContent = currentLogin
 }
