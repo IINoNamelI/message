@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Мой Мессенджер</title>
+</head>
+<body>
+    <div id="auth-container">
+        <h2>Авторизация</h2>
+        <input type="email" id="email" placeholder="Email"><br>
+        <input type="password" id="password" placeholder="Пароль"><br>
+        <input type="text" id="username" placeholder="Юзернейм (только для регистрации)"><br>
+        <button id="register-btn">Зарегистрироваться</button>
+        <button id="login-btn">Войти</button>
+    </div>
+
+    <div id="chat-container" style="display: none;">
+        <h2>Добро пожаловать, <span id="user-name"></span>!</h2>
+        <button id="logout-btn">Выйти</button>
+    </div>
+
+    <!-- Подключаем наш скрипт как модуль -->
+    <script type="module" src="app.js"></script>
+</body>
+</html>
